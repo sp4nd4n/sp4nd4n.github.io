@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>SPECTRE // Field Unit</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#070a08">
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --void:#070a08;
+  --panel:#0e140f;
+  --panel-line:#1c2b1e;
+  --phosphor:#39ff88;
+  --phosphor-dim:#1e7a45;
+  --alert:#ff3b3b;
+  --amber:#ffb020;
+  --ice:#7fd7ff;
+  --text-dim:#5f8f6c;
+  --font-display:'Share Tech Mono', monospace;
+  --font-body:'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0; height:100%; background:var(--void); color:var(--phosphor); font-family:var(--font-body); overflow-x:hidden;}
+body::before{
+  content:""; position:fixed; inset:0; pointer-events:none;
+  background:repeating-linear-gradient(to bottom, rgba(57,255,136,0.035) 0px, rgba(57,255,136,0.035) 1px, transparent 1px, transparent 3px);
+  z-index:999; mix-blend-mode:overlay;
+}
+.scan-flicker{animation:flicker 6s infinite;}
+@keyframes flicker{0%,96%,100%{opacity:1;} 97%{opacity:0.82;} 98%{opacity:1;} 99%{opacity:0.9;}}
+
+header.console-header{padding:18px 16px 10px; text-align:center; border-bottom:1px solid var(--panel-line);}
+header.console-header h1{font-family:var(--font-display); letter-spacing:4px; font-size:22px; margin:0; color:var(--phosphor); text-shadow:0 0 8px rgba(57,255,136,0.55); user-select:none;}
+header.console-header .subtitle{font-size:11px; color:var(--text-dim); letter-spacing:2px; margin-top:4px;}
+
+.status-strip{
+  display:flex; justify-content:space-between; align-items:center;
+  max-width:520px; margin:0 auto; padding:10px 16px;
+  border-bottom:1px solid var(--panel-line);
+  font-family:var(--font-display); font-size:10px; letter-spacing:1px; color:var(--text-dim);
+}
+.status-strip .dot-live{width:6px; height:6px; border-radius:50%; background:var(--phosphor); box-shadow:0 0 6px var(--phosphor); display:inline-block; margin-right:5px; animation:pulse-dot 2s infinite;}
+@keyframes pulse-dot{0%,100%{opacity:1;} 50%{opacity:0.35;}}
+
+.grid{display:grid; grid-template-columns:1fr; gap:14px; padding:14px; max-width:520px; margin:0 auto;}
+.panel{background:var(--panel); border:1px solid var(--panel-line); border-radius:4px; padding:14px; position:relative;}
+.panel::before{content:attr(data-label); position:absolute; top:-9px; left:10px; background:var(--void); padding:0 6px; font-size:10px; letter-spacing:2px; color:var(--text-dim); font-family:var(--font-display);}
+.readout{font-family:var(--font-display); font-size:13px; color:var(--text-dim); letter-spacing:1px;}
+
+.emf-track{height:22px; background:#050705; border:1px solid var(--panel-line); border-radius:3px; overflow:hidden; margin-top:8px;}
+.emf-fill{height:100%; width:0%; background:linear-gradient(90deg, var(--phosphor-dim), var(--phosphor) 60%, var(--amber) 85%, var(--alert)); transition:width 0.35s ease;}
+
+.k2-row{display:flex; gap:8px; margin-top:10px;}
+.k2-led{flex:1; height:34px; border-radius:3px; background:#111c13; border:1px solid var(--panel-line); transition:background 0.15s, box-shadow 0.15s;}
+.k2-led.on-1{background:var(--phosphor-dim); box-shadow:0 0 8px var(--phosphor-dim);}
+.k2-led.on-2{background:var(--phosphor); box-shadow:0 0 10px var(--phosphor);}
+.k2-led.on-3{background:var(--amber); box-shadow:0 0 10px var(--amber);}
+.k2-led.on-4{background:var(--alert); box-shadow:0 0 12px var(--alert);}
+
+.rempod-square{position:relative; width:180px; height:180px; max-width:70%; aspect-ratio:1; margin:22px auto 4px;}
+.rempod-dot{position:absolute; width:24px; height:24px; border-radius:50%; background:transparent; border:2px solid var(--phosphor-dim); transition:background 0.15s, border-color 0.15s, box-shadow 0.15s;}
+.rempod-dot#k2-1{top:0; left:0;}
+.rempod-dot#k2-2{top:0; right:0;}
+.rempod-dot#k2-3{bottom:0; left:0;}
+.rempod-dot#k2-4{bottom:0; right:0;}
+.rempod-dot.on{background:var(--alert); border-color:var(--alert); box-shadow:0 0 12px var(--alert);}
+
+.spirit-display{margin-top:10px; min-height:44px; border:1px solid var(--panel-line); border-radius:3px; background:#050705; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:16px; letter-spacing:3px; color:var(--ice); text-shadow:0 0 6px rgba(127,215,255,0.6); padding:6px; text-align:center;}
+.spirit-idle{color:var(--text-dim); font-size:11px; letter-spacing:2px;}
+
+.therm-wrap{display:flex; align-items:center; gap:14px; margin-top:8px;}
+.therm-tube{width:14px; height:90px; border:1px solid var(--panel-line); border-radius:8px; background:#050705; position:relative; overflow:hidden;}
+.therm-fill{position:absolute; bottom:0; left:0; right:0; height:50%; background:linear-gradient(to top, var(--alert), var(--amber), var(--ice)); transition:height 0.5s ease;}
+.therm-value{font-family:var(--font-display); font-size:24px;}
+.therm-value.cold{color:var(--ice); text-shadow:0 0 8px rgba(127,215,255,0.7);}
+.therm-value.warm{color:var(--amber);}
+
+.motion-status{margin-top:8px; font-family:var(--font-display); font-size:13px;}
+.motion-status.alert{color:var(--alert); text-shadow:0 0 8px rgba(255,59,59,0.6);}
+
+.radar-wrap{display:flex; justify-content:center; margin-top:10px;}
+.radar-circle{position:relative; width:220px; height:220px; max-width:80%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, rgba(57,255,136,0.14), #030503 75%); border:1px solid var(--phosphor-dim); overflow:hidden;}
+.radar-ring{position:absolute; border:1px solid var(--phosphor-dim); border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%);}
+.radar-ring.r1{width:70%; height:70%;}
+.radar-ring.r2{width:44%; height:44%;}
+.radar-ring.r3{width:18%; height:18%;}
+.radar-cross-h{position:absolute; top:50%; left:0; right:0; height:1px; background:var(--phosphor-dim);}
+.radar-cross-v{position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--phosphor-dim);}
+.radar-sweep{position:absolute; top:50%; left:50%; width:50%; height:2px; background:linear-gradient(to right, var(--phosphor), transparent); transform-origin:0% 50%; animation:radarSpin 3s linear infinite;}
+@keyframes radarSpin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+.radar-blip{position:absolute; width:10px; height:10px; border-radius:50%; background:var(--alert); box-shadow:0 0 10px var(--alert); transform:translate(-50%,-50%); top:50%; left:50%; animation:blip-pulse 1.6s ease-in-out infinite;}
+@keyframes blip-pulse{0%,100%{opacity:0.25;} 50%{opacity:1;}}
+
+.cam-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:4px; overflow:hidden; border:1px solid var(--panel-line);}
+.cam-wrap video{width:100%; height:100%; object-fit:cover;}
+.cam-wrap canvas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
+.cam-off-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:12px; color:var(--text-dim); text-align:center; padding:20px;}
+
+.pairing-modal{position:fixed; inset:0; background:rgba(3,5,3,0.92); display:none; align-items:center; justify-content:center; z-index:1000; padding:20px;}
+.pairing-modal.open{display:flex;}
+.pairing-box{background:var(--panel); border:1px solid var(--phosphor-dim); border-radius:6px; padding:24px; width:100%; max-width:320px; text-align:center;}
+.pairing-box h2{font-family:var(--font-display); font-size:16px; letter-spacing:2px; margin:0 0 12px;}
+.session-code{font-family:var(--font-display); font-size:34px; letter-spacing:8px; color:var(--phosphor); text-shadow:0 0 10px rgba(57,255,136,0.6); margin:10px 0 18px;}
+.pairing-box button, .pairing-box input{width:100%; padding:10px; margin-top:8px; background:#050705; border:1px solid var(--panel-line); color:var(--phosphor); font-family:var(--font-body); border-radius:3px; font-size:14px;}
+.pairing-box button{cursor:pointer; border-color:var(--phosphor-dim); letter-spacing:1px;}
+.pairing-box button:active{background:var(--phosphor-dim); color:var(--void);}
+.pairing-close{margin-top:14px; background:none !important; border:none !important; color:var(--text-dim) !important; font-size:11px !important;}
+
+.slider-row{margin-top:12px;}
+.slider-row label{display:flex; justify-content:space-between; font-size:11px; letter-spacing:1px; color:var(--text-dim); margin-bottom:4px;}
+input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
+.btn-row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+.btn{flex:1; min-width:70px; padding:12px 8px; background:#0e140f; border:1px solid var(--panel-line); color:var(--phosphor); font-family:var(--font-body); font-size:12px; border-radius:4px; text-align:center;}
+.btn:active{background:var(--phosphor-dim); color:var(--void);}
+.btn.danger{border-color:var(--alert); color:var(--alert);}
+.btn.danger:active{background:var(--alert); color:var(--void);}
+.btn.active-state{background:var(--phosphor-dim); color:var(--void);}
+
+.connect-pill{font-size:11px; letter-spacing:1px; text-align:center; padding:6px; border-radius:20px; border:1px solid var(--panel-line); margin:10px auto 0; max-width:220px;}
+.connect-pill.linked{color:var(--phosphor); border-color:var(--phosphor-dim);}
+.connect-pill.unlinked{color:var(--alert); border-color:var(--alert);}
+
+.footer-note{text-align:center; font-size:10px; color:var(--text-dim); padding:20px; letter-spacing:1px;}
+.hidden{display:none !important;}
+
+/* Tool menu (home screen) */
+.tool-menu{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:14px; max-width:520px; margin:0 auto;}
+.tool-card{
+  background:var(--panel); border:1px solid var(--panel-line); border-radius:6px;
+  padding:22px 10px; text-align:center; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  min-height:132px; justify-content:center;
+  position:relative;
+}
+.tool-card:active{background:var(--phosphor-dim); }
+.tool-card .icon{width:32px; height:32px;}
+.tool-card .label{font-family:var(--font-display); font-size:12px; letter-spacing:1px;}
+.tool-card .sub{font-size:9px; letter-spacing:1px; color:var(--text-dim);}
+.tool-card .status-dot{width:7px; height:7px; border-radius:50%; background:var(--text-dim); position:absolute; top:10px; right:10px;}
+.tool-card .status-dot.live{background:var(--phosphor); box-shadow:0 0 6px var(--phosphor);}
+
+.log-panel{
+  max-width:520px; margin:6px auto 0; padding:0 14px 14px;
+  font-family:var(--font-display); font-size:10px; color:var(--text-dim); letter-spacing:1px;
+}
+.log-panel .log-title{font-size:10px; color:var(--text-dim); letter-spacing:2px; margin-bottom:6px; border-bottom:1px solid var(--panel-line); padding-bottom:6px;}
+.log-line{display:flex; justify-content:space-between; padding:3px 0;}
+
+.tool-screen{max-width:520px; margin:0 auto; padding:14px;}
+.back-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  color:var(--text-dim); font-family:var(--font-display);
+  font-size:12px; letter-spacing:1px; padding:8px 4px; cursor:pointer;
+}
+.back-btn:active{color:var(--phosphor);}
+</style>
+</head>
+<body class="scan-flicker">
+
+<!-- ============ FIELD UNIT VIEW ============ -->
+<div id="fieldView">
+  <header class="console-header">
+    <h1 id="titleHold">S P E C T R E</h1>
+  </header>
+  <div class="status-strip">
+    <span><span class="dot-live"></span>SCANNING</span>
+    <span id="liveClock">--:--:--</span>
+  </div>
+
+  <!-- HOME: tool selection menu -->
+  <div class="tool-menu" id="toolMenu">
+    <div class="tool-card" data-tool="emf">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l2-7 3 14 3-10 2 5h6"/></svg>
+      <div class="label">EMF METER</div>
+      <div class="sub">FIELD STRENGTH</div>
+      <div class="status-dot" id="dot-emf"></div>
+    </div>
+    <div class="tool-card" data-tool="k2">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="5" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/></svg>
+      <div class="label">REM-POD</div>
+      <div class="sub">EM PULSE DETECT</div>
+      <div class="status-dot" id="dot-k2"></div>
+    </div>
+    <div class="tool-card" data-tool="spirit">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="9" width="16" height="11" rx="1"/><circle cx="8.5" cy="14.5" r="1.6"/><path d="M13 12h5M13 15h5M13 18h3"/><path d="M9 9V5l3-2 3 2v4"/></svg>
+      <div class="label">SPIRIT BOX</div>
+      <div class="sub">FREQUENCY SCAN</div>
+      <div class="status-dot" id="dot-spirit"></div>
+    </div>
+    <div class="tool-card" data-tool="therm">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a2 2 0 0 0-2 2v9.5a4 4 0 1 0 4 0V5a2 2 0 0 0-2-2z"/><path d="M12 8v6"/></svg>
+      <div class="label">THERMOMETER</div>
+      <div class="sub">AMBIENT TEMP</div>
+      <div class="status-dot" id="dot-therm"></div>
+    </div>
+    <div class="tool-card" data-tool="motion">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="9"/></svg>
+      <div class="label">MOTION SENSOR</div>
+      <div class="sub">MOVEMENT DETECT</div>
+      <div class="status-dot" id="dot-motion"></div>
+    </div>
+    <div class="tool-card" data-tool="cam">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <div class="label">SLS CAMERA</div>
+      <div class="sub">VISUAL SPECTRUM</div>
+      <div class="status-dot" id="dot-cam"></div>
+    </div>
+  </div>
+
+  <div class="log-panel">
+    <div class="log-title">SYSTEM LOG</div>
+    <div class="log-line"><span>UNIT ID</span><span id="logUnitId">SPX-000</span></div>
+    <div class="log-line"><span>SESSION</span><span id="sessionLabel">NOT LINKED</span></div>
+    <div class="log-line"><span>SENSORS</span><span>6/6 ONLINE</span></div>
+  </div>
+
+  <!-- Individual tool screens -->
+  <div class="tool-screen hidden" id="screen-emf">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="EMF METER">
+      <div class="readout" id="emfReadout">0.0 mG</div>
+      <div class="emf-track"><div class="emf-fill" id="emfFill"></div></div>
+    </div>
+  </div>
+
+  <div class="tool-screen hidden" id="screen-k2">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="REM-POD">
+      <div class="readout">ELECTROMAGNETIC PULSE DETECT</div>
+      <div class="rempod-square">
+        <div class="rempod-dot" id="k2-1"></div>
+        <div class="rempod-dot" id="k2-2"></div>
+        <div class="rempod-dot" id="k2-3"></div>
+        <div class="rempod-dot" id="k2-4"></div>
+      </div>
+      <div class="btn-row hidden" id="k2StopRow">
+        <div class="btn danger" id="k2StopBtn">STOP</div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="tool-screen hidden" id="screen-spirit">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="SPIRIT BOX">
+      <div class="spirit-display" id="spiritDisplay"><span class="spirit-idle">SCANNING FREQUENCIES...</span></div>
+    </div>
+  </div>
+
+  <div class="tool-screen hidden" id="screen-therm">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="THERMOMETER">
+      <div class="therm-wrap">
+        <div class="therm-tube"><div class="therm-fill" id="thermFill"></div></div>
+        <div>
+          <div class="therm-value" id="thermValue">21.0°C</div>
+          <div class="readout" id="thermStatus">AMBIENT NORMAL</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-screen hidden" id="screen-motion">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="MOTION SENSOR">
+      <div class="radar-wrap">
+        <div class="radar-circle">
+          <div class="radar-ring r1"></div>
+          <div class="radar-ring r2"></div>
+          <div class="radar-ring r3"></div>
+          <div class="radar-cross-h"></div>
+          <div class="radar-cross-v"></div>
+          <div class="radar-sweep"></div>
+          <div class="radar-blip hidden" id="radarBlip"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tool-screen hidden" id="screen-cam">
+    <div class="back-btn" data-back>< BACK</div>
+    <div class="panel" data-label="SLS CAMERA">
+      <div class="cam-wrap" id="camWrap">
+        <div class="cam-off-msg" id="camOffMsg">TAP TO ACTIVATE CAMERA</div>
+        <video id="camVideo" autoplay playsinline muted style="display:none;"></video>
+        <canvas id="ghostCanvas"></canvas>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ OPERATOR CONSOLE VIEW ============ -->
+<div id="operatorView" class="hidden">
+  <header class="console-header">
+    <h1>OPERATOR CONSOLE</h1>
+    <div class="subtitle">REMOTE CONTROL LINK</div>
+    <div class="back-btn" id="operatorBackBtn">< MAIN SCREEN</div>
+  </header>
+
+  <div class="grid">
+    <div class="panel" data-label="LINK">
+      <input type="text" id="codeInput" placeholder="ENTER 6-DIGIT SESSION CODE" maxlength="6" style="text-align:center; letter-spacing:4px; font-family:'Share Tech Mono',monospace; font-size:18px; width:100%; padding:10px; background:#050705; border:1px solid var(--panel-line); color:var(--phosphor); border-radius:3px;">
+      <button class="btn" id="linkBtn" style="width:100%; margin-top:8px; border:1px solid var(--panel-line); cursor:pointer;">LINK TO DEVICE</button>
+      <div class="connect-pill unlinked" id="linkStatus">UNLINKED</div>
+    </div>
+
+    <div class="panel" data-label="EMF METER">
+      <div class="slider-row"><label><span>LEVEL</span><span id="emfVal">0</span></label><input type="range" id="emfSlider" min="0" max="100" value="0"></div>
+    </div>
+
+    <div class="panel" data-label="REM-POD">
+      <div class="btn-row"><div class="btn" id="remStartBtn">START SOUND</div><div class="btn danger" id="remStopBtn">STOP SOUND</div></div>
+    </div>
+
+    <div class="panel" data-label="SPIRIT BOX">
+      <input type="text" id="spiritWord" placeholder="TYPE WORD/PHRASE TO 'SPEAK'" style="width:100%; padding:10px; background:#050705; border:1px solid var(--panel-line); color:var(--phosphor); border-radius:3px; font-family:var(--font-body);">
+      <div class="btn-row"><div class="btn" id="spiritSend">SEND</div><div class="btn" id="spiritClear">CLEAR</div></div>
+    </div>
+
+    <div class="panel" data-label="THERMOMETER">
+      <div class="slider-row"><label><span>TEMP °C</span><span id="thermVal">21</span></label><input type="range" id="thermSlider" min="-10" max="35" value="21"></div>
+    </div>
+
+    <div class="panel" data-label="MOTION SENSOR">
+      <div class="btn-row"><div class="btn danger" id="motionTrigger">TRIGGER MOTION</div><div class="btn" id="motionClear">STOP</div></div>
+    </div>
+
+    <div class="panel" data-label="GHOST OVERLAY">
+      <div class="btn-row"><div class="btn" id="ghostToggle">SHOW GHOST</div></div>
+    </div>
+  </div>
+
+  <div class="footer-note">Changes here appear live on the field unit phone.</div>
+</div>
+
+<!-- ============ HIDDEN PAIRING MODAL ============ -->
+<div class="pairing-modal" id="pairingModal">
+  <div class="pairing-box">
+    <h2 id="pairingTitle">DEVICE LINK</h2>
+    <div class="readout" id="pairingSub">Enter this code on the controller phone</div>
+    <div class="session-code" id="sessionCodeDisplay">------</div>
+    <button id="newCodeBtn">GENERATE NEW CODE</button>
+    <button id="switchModeBtn">SWITCH THIS PHONE TO CONTROLLER</button>
+    <button class="pairing-close" id="closePairing">CLOSE</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// ============================================================
+// PASTE YOUR FIREBASE CONFIG HERE (Firebase Console -> Project
+// Settings -> Your apps -> Web app). This is the only edit needed.
+// ============================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyBFq75yTSw6moYyuNBq6UsEVaPgqmUsXVo",
+  authDomain: "spectre-app-17094.firebaseapp.com",
+  databaseURL: "https://spectre-app-17094-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "spectre-app-17094",
+  storageBucket: "spectre-app-17094.firebasestorage.app",
+  messagingSenderId: "444030083800",
+  appId: "1:444030083800:web:7b6d1935ade9c90aa3adad",
+  measurementId: "G-E7YRG2BGD5"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// ============================================================
+// SOUND ENGINE — EMF beeps, K2 clicks, spirit box static
+// ============================================================
+let audioCtx = null;
+let masterGain = null;
+function ensureAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.5;
+    masterGain.connect(audioCtx.destination);
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+let liveEmf = 0, liveK2 = 0;
+
+// --- EMF: beeping tone, rate + pitch rise with field level (like a real EMF meter) ---
+let emfTimer = null;
+function playBeep(freq, dur, vol){
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+  g.gain.value = 0;
+  osc.connect(g); g.connect(masterGain);
+  const now = audioCtx.currentTime;
+  g.gain.linearRampToValueAtTime(vol, now + 0.01);
+  g.gain.linearRampToValueAtTime(0, now + dur);
+  osc.start(now);
+  osc.stop(now + dur + 0.02);
+}
+function startEmfSound(){
+  ensureAudio();
+  stopEmfSound();
+  function loop(){
+    const level = liveEmf; // 0-100
+    if(level > 3){
+      const freq = 300 + level * 9;
+      playBeep(freq, 0.09, Math.min(0.5, 0.15 + level/200));
+    }
+    const interval = Math.max(90, 480 - level * 4); // faster beeps as level rises
+    emfTimer = setTimeout(loop, interval);
+  }
+  loop();
+}
+function stopEmfSound(){ if(emfTimer){ clearTimeout(emfTimer); emfTimer = null; } }
+
+// --- REM-POD: one continuous held tone while active, like a real REM-POD alert ---
+function playShortBeep(){
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = 1050;
+  g.gain.value = 0;
+  osc.connect(g); g.connect(masterGain);
+  const now = audioCtx.currentTime;
+  g.gain.linearRampToValueAtTime(0.32, now + 0.005);
+  g.gain.linearRampToValueAtTime(0, now + 0.09);
+  osc.start(now);
+  osc.stop(now + 0.1);
+}
+let remOsc = null, remGain = null;
+function startRemSound(){
+  ensureAudio();
+  stopRemSound();
+  remOsc = audioCtx.createOscillator();
+  remGain = audioCtx.createGain();
+  remOsc.type = 'square';
+  remOsc.frequency.value = 1050;
+  remGain.gain.value = 0;
+  remOsc.connect(remGain); remGain.connect(masterGain);
+  remOsc.start();
+  remGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.03);
+}
+function stopRemSound(){
+  if(remOsc){
+    const now = audioCtx.currentTime;
+    remGain.gain.linearRampToValueAtTime(0, now + 0.05);
+    remOsc.stop(now + 0.08);
+    remOsc = null; remGain = null;
+  }
+}
+
+// --- REM-POD local simulation: opens beeping with dots lit + STOP button (field view) ---
+let k2LocalActive = false;
+function renderRemDots(active){
+  for(let i=1;i<=4;i++){
+    const dot = document.getElementById('k2-'+i);
+    if(!dot) continue;
+    dot.classList.toggle('on', active);
+  }
+}
+function startK2LocalSim(){
+  k2LocalActive = true;
+  ensureAudio();
+  renderRemDots(true);
+  startRemSound();
+  const stopRow = document.getElementById('k2StopRow');
+  if(stopRow) stopRow.classList.remove('hidden');
+}
+function stopK2LocalSim(){
+  k2LocalActive = false;
+  stopRemSound();
+  renderRemDots(false);
+  const stopRow = document.getElementById('k2StopRow');
+  if(stopRow) stopRow.classList.add('hidden');
+}
+document.getElementById('k2StopBtn').addEventListener('click', stopK2LocalSim);
+
+// --- Motion sensor: radar blip locked to one random position per trigger + continuous alert beep ---
+let motionAlertTimer = null;
+function showRadarBlip(){
+  const blip = document.getElementById('radarBlip');
+  if(!blip) return;
+  const angle = Math.random()*2*Math.PI;
+  const r = Math.random()*40;
+  blip.style.left = (50 + r*Math.cos(angle)) + '%';
+  blip.style.top = (50 + r*Math.sin(angle)) + '%';
+  blip.classList.remove('hidden');
+}
+function hideRadarBlip(){
+  const blip = document.getElementById('radarBlip');
+  if(blip) blip.classList.add('hidden');
+}
+function startMotionAlert(){
+  ensureAudio();
+  stopMotionAlert();
+  showRadarBlip(); // pick one position and hold it there
+  motionAlertTimer = setInterval(playShortBeep, 260);
+}
+function stopMotionAlert(){
+  if(motionAlertTimer){ clearInterval(motionAlertTimer); motionAlertTimer = null; }
+  hideRadarBlip();
+}
+
+// --- Spirit box: continuous static/white noise, radio-scan character ---
+let spiritNoiseSource = null, spiritNoiseGain = null, spiritFilter = null;
+function startSpiritSound(){
+  ensureAudio();
+  stopSpiritSound();
+  const bufferSize = audioCtx.sampleRate * 2;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for(let i=0;i<bufferSize;i++) data[i] = Math.random()*2 - 1;
+
+  spiritNoiseSource = audioCtx.createBufferSource();
+  spiritNoiseSource.buffer = buffer;
+  spiritNoiseSource.loop = true;
+
+  spiritFilter = audioCtx.createBiquadFilter();
+  spiritFilter.type = 'bandpass';
+  spiritFilter.frequency.value = 1200;
+  spiritFilter.Q.value = 0.7;
+
+  spiritNoiseGain = audioCtx.createGain();
+  spiritNoiseGain.gain.value = 0.12;
+
+  spiritNoiseSource.connect(spiritFilter);
+  spiritFilter.connect(spiritNoiseGain);
+  spiritNoiseGain.connect(masterGain);
+  spiritNoiseSource.start();
+
+  // slow random drift on the filter frequency to sound like a radio scanning through stations
+  spiritSweepTimer = setInterval(()=>{
+    if(spiritFilter){
+      spiritFilter.frequency.linearRampToValueAtTime(600 + Math.random()*2200, audioCtx.currentTime + 0.4);
+    }
+  }, 450);
+}
+let spiritSweepTimer = null;
+function stopSpiritSound(){
+  if(spiritSweepTimer){ clearInterval(spiritSweepTimer); spiritSweepTimer = null; }
+  if(spiritNoiseSource){ try{ spiritNoiseSource.stop(); }catch(e){} spiritNoiseSource = null; }
+}
+function stopAllSounds(){ stopEmfSound(); stopRemSound(); stopSpiritSound(); stopMotionAlert(); }
+
+// ============================================================
+// ROLE HANDLING — this single file serves BOTH phones.
+// Each device remembers its own role (field / operator) locally.
+// ============================================================
+const fieldView = document.getElementById('fieldView');
+const operatorView = document.getElementById('operatorView');
+let role = sessionStorage.getItem('spectre_role') || 'field';
+
+function showRole(){
+  if(role === 'operator'){
+    fieldView.classList.add('hidden');
+    operatorView.classList.remove('hidden');
+  } else {
+    operatorView.classList.add('hidden');
+    fieldView.classList.remove('hidden');
+  }
+}
+showRole();
+
+// Live clock + unit ID for the status strip / system log (field view only)
+const liveClock = document.getElementById('liveClock');
+if(liveClock){
+  function tickClock(){
+    const d = new Date();
+    liveClock.textContent = d.toTimeString().slice(0,8);
+  }
+  tickClock();
+  setInterval(tickClock, 1000);
+}
+const logUnitId = document.getElementById('logUnitId');
+if(logUnitId){
+  let unitId = localStorage.getItem('spectre_unit_id');
+  if(!unitId){
+    unitId = 'SPX-' + Math.floor(100 + Math.random()*900);
+    localStorage.setItem('spectre_unit_id', unitId);
+  }
+  logUnitId.textContent = unitId;
+}
+
+// ============================================================
+// TOOL MENU NAVIGATION (field view only)
+// ============================================================
+const toolMenu = document.getElementById('toolMenu');
+if(toolMenu){
+  document.querySelectorAll('.tool-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      const tool = card.getAttribute('data-tool');
+      toolMenu.classList.add('hidden');
+      const screen = document.getElementById('screen-' + tool);
+      if(screen){
+        screen.classList.remove('hidden');
+        stopAllSounds();
+        if(tool === 'emf') startEmfSound();
+        if(tool === 'k2') startK2LocalSim();
+        if(tool === 'spirit') startSpiritSound();
+        if(tool === 'cam'){
+          // camera div was hidden (zero size) until now, so size the canvas once visible
+          setTimeout(resizeCanvas, 50);
+        }
+      }
+    });
+  });
+  document.querySelectorAll('[data-back]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tool-screen').forEach(s=>s.classList.add('hidden'));
+      toolMenu.classList.remove('hidden');
+      stopAllSounds();
+      stopK2LocalSim();
+    });
+  });
+}
+
+
+// ============================================================
+// PAIRING MODAL — long-press the title (field view) for 1.5s
+// ============================================================
+const pairingModal = document.getElementById('pairingModal');
+const sessionCodeDisplay = document.getElementById('sessionCodeDisplay');
+let sessionCode = localStorage.getItem('spectre_session') || null;
+
+let pressTimer = null;
+const titleHold = document.getElementById('titleHold');
+if(titleHold){
+  titleHold.addEventListener('touchstart', ()=>{ pressTimer = setTimeout(openPairing, 1500); });
+  titleHold.addEventListener('mousedown', ()=>{ pressTimer = setTimeout(openPairing, 1500); });
+  titleHold.addEventListener('touchend', ()=> clearTimeout(pressTimer));
+  titleHold.addEventListener('mouseup', ()=> clearTimeout(pressTimer));
+  titleHold.addEventListener('touchmove', ()=> clearTimeout(pressTimer));
+}
+
+function openPairing(){
+  if(!sessionCode) generateNewCode();
+  sessionCodeDisplay.textContent = sessionCode;
+  pairingModal.classList.add('open');
+}
+document.getElementById('closePairing').addEventListener('click', ()=> pairingModal.classList.remove('open'));
+document.getElementById('newCodeBtn').addEventListener('click', generateNewCode);
+document.getElementById('switchModeBtn').addEventListener('click', ()=>{
+  sessionStorage.setItem('spectre_role', 'operator');
+  location.reload();
+});
+document.getElementById('operatorBackBtn').addEventListener('click', ()=>{
+  sessionStorage.setItem('spectre_role', 'field');
+  location.reload();
+});
+
+function generateNewCode(){
+  sessionCode = Math.floor(100000 + Math.random()*900000).toString();
+  localStorage.setItem('spectre_session', sessionCode);
+  sessionCodeDisplay.textContent = sessionCode;
+  const label = document.getElementById('sessionLabel');
+  if(label) label.textContent = sessionCode;
+  connectFieldToSession();
+}
+
+// ============================================================
+// FIELD UNIT LOGIC
+// ============================================================
+let fieldDbRef = null;
+function connectFieldToSession(){
+  if(!sessionCode) return;
+  const label = document.getElementById('sessionLabel');
+  if(label) label.textContent = sessionCode;
+  fieldDbRef = db.ref('sessions/' + sessionCode + '/state');
+  fieldDbRef.on('value', (snap)=>{
+    const data = snap.val();
+    if(data) applyState(data);
+  });
+}
+if(role === 'field'){
+  const label = document.getElementById('sessionLabel');
+  if(sessionCode){
+    label.textContent = sessionCode;
+    connectFieldToSession();
+  } else {
+    label.textContent = 'NOT LINKED';
+  }
+}
+
+let ghostState = { visible:false, opacity:100 };
+let liveRemOn = false, liveMotion = false, liveGhostVisible = false;
+
+function applyState(data){
+  if(typeof data.emf === 'number'){
+    liveEmf = data.emf;
+    document.getElementById('emfFill').style.width = data.emf + '%';
+    document.getElementById('emfReadout').textContent = (data.emf * 0.07).toFixed(1) + ' mG';
+  }
+  if(!k2LocalActive){
+    const remOn = !!data.remOn;
+    if(remOn !== liveRemOn){
+      liveRemOn = remOn;
+      renderRemDots(remOn);
+      if(remOn) startRemSound(); else stopRemSound();
+    }
+  }
+  const spiritDisplay = document.getElementById('spiritDisplay');
+  if(data.spiritWord){
+    spiritDisplay.textContent = data.spiritWord;
+    speakWord(data.spiritWord);
+  } else {
+    spiritDisplay.innerHTML = '<span class="spirit-idle">SCANNING FREQUENCIES...</span>';
+  }
+  if(typeof data.temp === 'number'){
+    const pct = ((data.temp + 10) / 45) * 100;
+    document.getElementById('thermFill').style.height = pct + '%';
+    const val = document.getElementById('thermValue');
+    val.textContent = data.temp.toFixed(1) + '°C';
+    const status = document.getElementById('thermStatus');
+    if(data.temp < 10){ val.className = 'therm-value cold'; status.textContent = 'ANOMALOUS COLD SPOT'; }
+    else { val.className = 'therm-value warm'; status.textContent = 'AMBIENT NORMAL'; }
+  }
+  const motion = !!data.motion;
+  if(motion !== liveMotion){
+    liveMotion = motion;
+    if(motion) startMotionAlert(); else stopMotionAlert();
+  }
+
+  const newGhostVisible = !!data.ghostVisible;
+  if(newGhostVisible !== liveGhostVisible) ghostAutoPos = null;
+  liveGhostVisible = newGhostVisible;
+  ghostState.visible = newGhostVisible;
+  ghostState.opacity = 100;
+
+  setDot('dot-emf', data.emf > 5);
+  setDot('dot-k2', !!data.remOn);
+  setDot('dot-spirit', !!data.spiritWord);
+  setDot('dot-therm', typeof data.temp === 'number' && data.temp < 10);
+  setDot('dot-motion', motion);
+  setDot('dot-cam', !!data.ghostVisible);
+}
+function setDot(id, isLive){
+  const el = document.getElementById(id);
+  if(el) el.classList.toggle('live', isLive);
+}
+
+function speakWord(word){
+  if(!('speechSynthesis' in window)) return;
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.pitch = 0.3 + Math.random()*0.6;
+  utter.rate = 0.85 + Math.random()*0.3;
+  utter.volume = 0.9;
+  speechSynthesis.cancel();
+  speechSynthesis.speak(utter);
+}
+
+// Camera + dot-matrix ghost overlay
+const camWrap = document.getElementById('camWrap');
+const camVideo = document.getElementById('camVideo');
+const camOffMsg = document.getElementById('camOffMsg');
+const ghostCanvas = document.getElementById('ghostCanvas');
+const gctx = ghostCanvas.getContext('2d');
+let camActive = false;
+
+if(camWrap){
+  camWrap.addEventListener('click', async ()=>{
+    if(camActive) return;
+
+    if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+      camOffMsg.textContent = 'CAMERA NOT SUPPORTED — needs HTTPS (GitHub Pages is fine, plain file:// is not)';
+      return;
+    }
+
+    camOffMsg.textContent = 'REQUESTING CAMERA...';
+
+    let stream;
+    try{
+      // Try the back camera first
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode:{ ideal:'environment' } }, audio:false });
+    }catch(e1){
+      try{
+        // Fall back to whatever camera is available (e.g. desktop / front only)
+        stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
+      }catch(e2){
+        if(e2.name === 'NotAllowedError'){
+          camOffMsg.textContent = 'PERMISSION DENIED — allow camera access in browser/site settings and retry';
+        } else if(e2.name === 'NotFoundError'){
+          camOffMsg.textContent = 'NO CAMERA FOUND ON THIS DEVICE';
+        } else {
+          camOffMsg.textContent = 'CAMERA ERROR: ' + e2.name;
+        }
+        return;
+      }
+    }
+
+    camVideo.srcObject = stream;
+    camVideo.style.display = 'block';
+    camOffMsg.style.display = 'none';
+    camActive = true;
+    try{ await camVideo.play(); }catch(e){ /* autoplay may already be running */ }
+    resizeCanvas();
+    requestAnimationFrame(renderLoop);
+  });
+}
+function resizeCanvas(){
+  ghostCanvas.width = camWrap.clientWidth;
+  ghostCanvas.height = camWrap.clientHeight;
+}
+window.addEventListener('resize', resizeCanvas);
+
+function renderLoop(){
+  gctx.clearRect(0,0,ghostCanvas.width, ghostCanvas.height);
+  if(ghostState.visible) drawSkeletonGhost();
+  requestAnimationFrame(renderLoop);
+}
+
+// Fixed humanoid skeleton keypoints (relative to a center anchor, unscaled)
+const skeletonPoints = [
+  [0,-90],            // 0 head
+  [0,-70],             // 1 neck
+  [-18,-65],[18,-65],  // 2 lShoulder, 3 rShoulder
+  [0,-40],             // 4 spineMid
+  [0,-10],             // 5 hip
+  [-14,-10],[14,-10],  // 6 lHip, 7 rHip
+  [-28,-38],[38,-30],  // 8 lElbow, 9 rElbow (extended arm)
+  [-30,-14],[60,-42],  // 10 lHand, 11 rHand (reaching out)
+  [-16,25],[16,25],    // 12 lKnee, 13 rKnee
+  [-16,55],[16,55]     // 14 lFoot, 15 rFoot
+];
+const skeletonLines = [
+  [0,1],[1,2],[1,3],[2,3],[1,4],[4,5],
+  [2,8],[8,10],[3,9],[9,11],
+  [5,6],[5,7],[6,12],[12,14],[7,13],[13,15]
+];
+
+// The ghost drifts on its own with a slow, organic random walk — no manual
+// position control — so it reads like a real infrared-camera anomaly.
+let ghostAutoPos = null;
+function stepGhostAutoPos(w,h){
+  if(!ghostAutoPos){
+    ghostAutoPos = {
+      cx: w * (0.3 + Math.random()*0.4),
+      cy: h * (0.45 + Math.random()*0.2),
+      vx: (Math.random()-0.5)*0.5,
+      vy: (Math.random()-0.5)*0.25,
+      scale: Math.min(w,h) * 0.0035
+    };
+    return;
+  }
+  ghostAutoPos.vx += (Math.random()-0.5)*0.06;
+  ghostAutoPos.vy += (Math.random()-0.5)*0.04;
+  ghostAutoPos.vx = Math.max(-0.6, Math.min(0.6, ghostAutoPos.vx));
+  ghostAutoPos.vy = Math.max(-0.3, Math.min(0.3, ghostAutoPos.vy));
+  ghostAutoPos.cx += ghostAutoPos.vx;
+  ghostAutoPos.cy += ghostAutoPos.vy;
+  const minX = w*0.15, maxX = w*0.85;
+  const minY = h*0.35, maxY = h*0.75;
+  if(ghostAutoPos.cx < minX || ghostAutoPos.cx > maxX) ghostAutoPos.vx *= -1;
+  if(ghostAutoPos.cy < minY || ghostAutoPos.cy > maxY) ghostAutoPos.vy *= -1;
+  ghostAutoPos.cx = Math.max(minX, Math.min(maxX, ghostAutoPos.cx));
+  ghostAutoPos.cy = Math.max(minY, Math.min(maxY, ghostAutoPos.cy));
+}
+// Robotic limb twitch: a few joints snap to a new offset every so often
+// (no interpolation) so the figure reads as actively moving its limbs,
+// on top of the slow whole-body drift above.
+let limbPose = {};
+let nextLimbUpdate = 0;
+const limbJoints = [8,9,10,11,12,13,14,15]; // elbows, hands, knees, feet
+function updateLimbPose(){
+  const now = Date.now();
+  if(now >= nextLimbUpdate){
+    limbJoints.forEach(i=>{
+      limbPose[i] = [(Math.random()-0.5)*16, (Math.random()-0.5)*16];
+    });
+    nextLimbUpdate = now + 350 + Math.random()*450;
+  }
+}
+
+function drawSkeletonGhost(){
+  const w = ghostCanvas.width, h = ghostCanvas.height;
+  stepGhostAutoPos(w,h);
+  updateLimbPose();
+  const { cx, cy, scale } = ghostAutoPos;
+  const alpha = ghostState.opacity/100;
+
+  function jointPos(i){
+    const p = skeletonPoints[i];
+    const off = limbPose[i] || [0,0];
+    return [cx + (p[0]+off[0])*scale, cy + (p[1]+off[1])*scale];
+  }
+
+  gctx.strokeStyle = `rgba(57,255,136,${alpha})`;
+  gctx.lineWidth = Math.max(8, scale*6);
+  gctx.lineCap = 'round';
+  gctx.lineJoin = 'round';
+  skeletonLines.forEach(([a,b])=>{
+    const [ax,ay] = jointPos(a), [bx,by] = jointPos(b);
+    gctx.beginPath();
+    gctx.moveTo(ax, ay);
+    gctx.lineTo(bx, by);
+    gctx.stroke();
+  });
+  gctx.fillStyle = `rgba(255,255,255,${alpha})`;
+  skeletonPoints.forEach((p,i)=>{
+    const [x,y] = jointPos(i);
+    gctx.beginPath();
+    gctx.arc(x, y, Math.max(5, scale*4), 0, Math.PI*2);
+    gctx.fill();
+  });
+}
+
+let lastAccel = null;
+window.addEventListener('devicemotion', (e)=>{
+  const acc = e.accelerationIncludingGravity;
+  if(!acc) return;
+  const total = Math.abs(acc.x||0) + Math.abs(acc.y||0) + Math.abs(acc.z||0);
+  if(lastAccel !== null && Math.abs(total - lastAccel) > 6){
+    const motionStatus = document.getElementById('motionStatus');
+    if(motionStatus){ motionStatus.textContent = 'MOVEMENT DETECTED (LOCAL)'; motionStatus.className = 'motion-status alert'; }
+  }
+  lastAccel = total;
+});
+
+// ============================================================
+// OPERATOR CONSOLE LOGIC
+// ============================================================
+let opDbRef = null;
+let opState = { emf:0, remOn:false, spiritWord:'', temp:21, motion:false, ghostVisible:false, ghostOp:100 };
+
+if(role === 'operator'){
+  const codeInput = document.getElementById('codeInput');
+  const linkStatus = document.getElementById('linkStatus');
+  const savedCode = localStorage.getItem('spectre_control_session') || '';
+  codeInput.value = savedCode;
+
+  document.getElementById('linkBtn').addEventListener('click', ()=>{
+    const code = codeInput.value.trim();
+    if(code.length !== 6){ alert('Enter the 6-digit code shown on the field unit.'); return; }
+    localStorage.setItem('spectre_control_session', code);
+    linkOperator(code, linkStatus);
+  });
+  if(savedCode) linkOperator(savedCode, linkStatus);
+
+  function linkOperator(code, linkStatus){
+    opDbRef = db.ref('sessions/' + code + '/state');
+    opDbRef.set(opState).then(()=>{
+      linkStatus.textContent = 'LINKED: ' + code;
+      linkStatus.className = 'connect-pill linked';
+    }).catch(()=>{
+      linkStatus.textContent = 'LINK FAILED';
+      linkStatus.className = 'connect-pill unlinked';
+    });
+  }
+
+  function pushOp(){ if(opDbRef) opDbRef.set(opState); }
+
+  const emfSlider = document.getElementById('emfSlider');
+  emfSlider.addEventListener('input', ()=>{ opState.emf = Number(emfSlider.value); document.getElementById('emfVal').textContent = opState.emf; pushOp(); });
+
+  document.getElementById('remStartBtn').addEventListener('click', ()=>{ opState.remOn = true; pushOp(); });
+  document.getElementById('remStopBtn').addEventListener('click', ()=>{ opState.remOn = false; pushOp(); });
+
+  document.getElementById('spiritSend').addEventListener('click', ()=>{
+    const word = document.getElementById('spiritWord').value.trim();
+    if(!word) return;
+    opState.spiritWord = word; pushOp();
+  });
+  document.getElementById('spiritClear').addEventListener('click', ()=>{
+    opState.spiritWord = ''; document.getElementById('spiritWord').value = ''; pushOp();
+  });
+
+  const thermSlider = document.getElementById('thermSlider');
+  thermSlider.addEventListener('input', ()=>{ opState.temp = Number(thermSlider.value); document.getElementById('thermVal').textContent = opState.temp; pushOp(); });
+
+  document.getElementById('motionTrigger').addEventListener('click', ()=>{ opState.motion = true; pushOp(); });
+  document.getElementById('motionClear').addEventListener('click', ()=>{ opState.motion = false; pushOp(); });
+
+  const ghostToggle = document.getElementById('ghostToggle');
+  ghostToggle.addEventListener('click', ()=>{
+    opState.ghostVisible = !opState.ghostVisible;
+    ghostToggle.textContent = opState.ghostVisible ? 'HIDE GHOST' : 'SHOW GHOST';
+    ghostToggle.classList.toggle('active-state', opState.ghostVisible);
+    pushOp();
+  });
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
