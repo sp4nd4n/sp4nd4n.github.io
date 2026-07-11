@@ -219,7 +219,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
   <!-- Individual tool screens -->
   <div class="tool-screen hidden" id="screen-emf">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="EMF METER">
       <div class="readout" id="emfReadout">0.0 mG</div>
       <div class="emf-track"><div class="emf-fill" id="emfFill"></div></div>
@@ -227,7 +227,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-k2">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="REM-POD">
       <div class="readout">ELECTROMAGNETIC PULSE DETECT</div>
       <div class="rempod-square">
@@ -244,19 +244,19 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
 
   <div class="tool-screen hidden" id="screen-spirit">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="SPIRIT BOX">
       <div class="spirit-display" id="spiritDisplay"><span class="spirit-idle">SCANNING FREQUENCIES...</span></div>
     </div>
   </div>
 
   <div class="tool-screen hidden" id="screen-therm">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="THERMOMETER">
       <div class="therm-wrap">
         <div class="therm-tube"><div class="therm-fill" id="thermFill"></div></div>
         <div>
-          <div class="therm-value" id="thermValue">21.0°C</div>
+          <div class="therm-value" id="thermValue">21.0Â°C</div>
           <div class="readout" id="thermStatus">AMBIENT NORMAL</div>
         </div>
       </div>
@@ -264,7 +264,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-motion">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="MOTION SENSOR">
       <div class="radar-wrap">
         <div class="radar-circle">
@@ -281,7 +281,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-cam">
-    <div class="back-btn" data-back>← BACK</div>
+    <div class="back-btn" data-back>â† BACK</div>
     <div class="panel" data-label="NIGHT VISION CAM">
       <div class="cam-wrap" id="camWrap">
         <div class="cam-off-msg" id="camOffMsg">TAP TO ACTIVATE CAMERA</div>
@@ -298,7 +298,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   <header class="console-header">
     <h1>OPERATOR CONSOLE</h1>
     <div class="subtitle">REMOTE CONTROL LINK</div>
-    <div class="back-btn" id="operatorBackBtn">← MAIN SCREEN</div>
+    <div class="back-btn" id="operatorBackBtn">â† MAIN SCREEN</div>
   </header>
 
   <div class="grid">
@@ -322,7 +322,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
     </div>
 
     <div class="panel" data-label="THERMOMETER">
-      <div class="slider-row"><label><span>TEMP °C</span><span id="thermVal">21</span></label><input type="range" id="thermSlider" min="-10" max="35" value="21"></div>
+      <div class="slider-row"><label><span>TEMP Â°C</span><span id="thermVal">21</span></label><input type="range" id="thermSlider" min="-10" max="35" value="21"></div>
     </div>
 
     <div class="panel" data-label="MOTION SENSOR">
@@ -355,8 +355,8 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
 <script>
 // ============================================================
-// PASTE YOUR FIREBASE CONFIG HERE (Firebase Console → Project
-// Settings → Your apps → Web app). This is the only edit needed.
+// PASTE YOUR FIREBASE CONFIG HERE (Firebase Console â†’ Project
+// Settings â†’ Your apps â†’ Web app). This is the only edit needed.
 // ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyBFq75yTSw6moYyuNBq6UsEVaPgqmUsXVo",
@@ -372,7 +372,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 // ============================================================
-// SOUND ENGINE — EMF beeps, K2 clicks, spirit box static
+// SOUND ENGINE â€” EMF beeps, K2 clicks, spirit box static
 // ============================================================
 let audioCtx = null;
 let masterGain = null;
@@ -543,7 +543,7 @@ function stopSpiritSound(){
 function stopAllSounds(){ stopEmfSound(); stopRemSound(); stopSpiritSound(); stopMotionAlert(); }
 
 // ============================================================
-// ROLE HANDLING — this single file serves BOTH phones.
+// ROLE HANDLING â€” this single file serves BOTH phones.
 // Each device remembers its own role (field / operator) locally.
 // ============================================================
 const fieldView = document.getElementById('fieldView');
@@ -616,7 +616,7 @@ if(toolMenu){
 
 
 // ============================================================
-// PAIRING MODAL — long-press the title (field view) for 1.5s
+// PAIRING MODAL â€” long-press the title (field view) for 1.5s
 // ============================================================
 const pairingModal = document.getElementById('pairingModal');
 const sessionCodeDisplay = document.getElementById('sessionCodeDisplay');
@@ -709,7 +709,7 @@ function applyState(data){
     const pct = ((data.temp + 10) / 45) * 100;
     document.getElementById('thermFill').style.height = pct + '%';
     const val = document.getElementById('thermValue');
-    val.textContent = data.temp.toFixed(1) + '°C';
+    val.textContent = data.temp.toFixed(1) + 'Â°C';
     const status = document.getElementById('thermStatus');
     if(data.temp < 10){ val.className = 'therm-value cold'; status.textContent = 'ANOMALOUS COLD SPOT'; }
     else { val.className = 'therm-value warm'; status.textContent = 'AMBIENT NORMAL'; }
@@ -761,7 +761,7 @@ if(camWrap){
     if(camActive) return;
 
     if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
-      camOffMsg.textContent = 'CAMERA NOT SUPPORTED — needs HTTPS (GitHub Pages is fine, plain file:// is not)';
+      camOffMsg.textContent = 'CAMERA NOT SUPPORTED â€” needs HTTPS (GitHub Pages is fine, plain file:// is not)';
       return;
     }
 
@@ -777,7 +777,7 @@ if(camWrap){
         stream = await navigator.mediaDevices.getUserMedia({ video:true, audio:false });
       }catch(e2){
         if(e2.name === 'NotAllowedError'){
-          camOffMsg.textContent = 'PERMISSION DENIED — allow camera access in browser/site settings and retry';
+          camOffMsg.textContent = 'PERMISSION DENIED â€” allow camera access in browser/site settings and retry';
         } else if(e2.name === 'NotFoundError'){
           camOffMsg.textContent = 'NO CAMERA FOUND ON THIS DEVICE';
         } else {
@@ -827,8 +827,8 @@ const skeletonLines = [
   [5,6],[5,7],[6,12],[12,14],[7,13],[13,15]
 ];
 
-// The ghost drifts on its own with a slow, organic random walk — no manual
-// position control — so it reads like a real infrared-camera anomaly.
+// The ghost drifts on its own with a slow, organic random walk â€” no manual
+// position control â€” so it reads like a real infrared-camera anomaly.
 let ghostAutoPos = null;
 function stepGhostAutoPos(w,h){
   if(!ghostAutoPos){
@@ -962,3 +962,4 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+```
