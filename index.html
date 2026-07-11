@@ -1,3 +1,4 @@
+``` html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,10 +93,11 @@ header.console-header .subtitle{font-size:11px; color:var(--text-dim); letter-sp
 .radar-cross-v{position:absolute; left:50%; top:0; bottom:0; width:1px; background:var(--phosphor-dim);}
 .radar-sweep{position:absolute; top:50%; left:50%; width:50%; height:2px; background:linear-gradient(to right, var(--phosphor), transparent); transform-origin:0% 50%; animation:radarSpin 3s linear infinite;}
 @keyframes radarSpin{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
-.radar-blip{position:absolute; width:10px; height:10px; border-radius:50%; background:var(--alert); box-shadow:0 0 10px var(--alert); transform:translate(-50%,-50%); top:50%; left:50%;}
+.radar-blip{position:absolute; width:10px; height:10px; border-radius:50%; background:var(--alert); box-shadow:0 0 10px var(--alert); transform:translate(-50%,-50%); top:50%; left:50%; animation:blip-pulse 1.6s ease-in-out infinite;}
+@keyframes blip-pulse{0%,100%{opacity:0.25;} 50%{opacity:1;}}
 
 .cam-wrap{position:relative; width:100%; aspect-ratio:3/4; background:#000; border-radius:4px; overflow:hidden; border:1px solid var(--panel-line);}
-.cam-wrap video{width:100%; height:100%; object-fit:cover; filter:grayscale(1) brightness(1.3) contrast(1.15) sepia(1) hue-rotate(60deg) saturate(4);}
+.cam-wrap video{width:100%; height:100%; object-fit:cover;}
 .cam-wrap canvas{position:absolute; inset:0; width:100%; height:100%; pointer-events:none;}
 .cam-off-msg{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:12px; color:var(--text-dim); text-align:center; padding:20px;}
 
@@ -204,7 +206,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
     </div>
     <div class="tool-card" data-tool="cam">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
-      <div class="label">NIGHT VISION CAM</div>
+      <div class="label">SLS CAMERA</div>
       <div class="sub">VISUAL SPECTRUM</div>
       <div class="status-dot" id="dot-cam"></div>
     </div>
@@ -219,7 +221,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
   <!-- Individual tool screens -->
   <div class="tool-screen hidden" id="screen-emf">
-    <div class="back-btn" data-back>â† BACK</div>
+    <div class="back-btn" data-back>â†Â BACK</div>
     <div class="panel" data-label="EMF METER">
       <div class="readout" id="emfReadout">0.0 mG</div>
       <div class="emf-track"><div class="emf-fill" id="emfFill"></div></div>
@@ -227,7 +229,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-k2">
-    <div class="back-btn" data-back>â† BACK</div>
+    <div class="back-btn" data-back>â†Â BACK</div>
     <div class="panel" data-label="REM-POD">
       <div class="readout">ELECTROMAGNETIC PULSE DETECT</div>
       <div class="rempod-square">
@@ -244,14 +246,14 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
 
   <div class="tool-screen hidden" id="screen-spirit">
-    <div class="back-btn" data-back>â† BACK</div>
+    <div class="back-btn" data-back>â†Â BACK</div>
     <div class="panel" data-label="SPIRIT BOX">
       <div class="spirit-display" id="spiritDisplay"><span class="spirit-idle">SCANNING FREQUENCIES...</span></div>
     </div>
   </div>
 
   <div class="tool-screen hidden" id="screen-therm">
-    <div class="back-btn" data-back>â† BACK</div>
+    <div class="back-btn" data-back>â†Â BACK</div>
     <div class="panel" data-label="THERMOMETER">
       <div class="therm-wrap">
         <div class="therm-tube"><div class="therm-fill" id="thermFill"></div></div>
@@ -264,7 +266,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-motion">
-    <div class="back-btn" data-back>â† BACK</div>
+    <div class="back-btn" data-back>â†Â BACK</div>
     <div class="panel" data-label="MOTION SENSOR">
       <div class="radar-wrap">
         <div class="radar-circle">
@@ -281,8 +283,8 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   </div>
 
   <div class="tool-screen hidden" id="screen-cam">
-    <div class="back-btn" data-back>â† BACK</div>
-    <div class="panel" data-label="NIGHT VISION CAM">
+    <div class="back-btn" data-back>â†Â BACK</div>
+    <div class="panel" data-label="SLS CAMERA">
       <div class="cam-wrap" id="camWrap">
         <div class="cam-off-msg" id="camOffMsg">TAP TO ACTIVATE CAMERA</div>
         <video id="camVideo" autoplay playsinline muted style="display:none;"></video>
@@ -298,7 +300,7 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
   <header class="console-header">
     <h1>OPERATOR CONSOLE</h1>
     <div class="subtitle">REMOTE CONTROL LINK</div>
-    <div class="back-btn" id="operatorBackBtn">â† MAIN SCREEN</div>
+    <div class="back-btn" id="operatorBackBtn">â†Â MAIN SCREEN</div>
   </header>
 
   <div class="grid">
@@ -331,7 +333,6 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
     <div class="panel" data-label="GHOST OVERLAY">
       <div class="btn-row"><div class="btn" id="ghostToggle">SHOW GHOST</div></div>
-      <div class="slider-row"><label><span>OPACITY / STRENGTH</span><span id="ghostOpVal">70</span></label><input type="range" id="ghostOp" min="10" max="100" value="70"></div>
     </div>
   </div>
 
@@ -355,8 +356,8 @@ input[type="range"]{width:100%; accent-color:var(--phosphor); height:26px;}
 
 <script>
 // ============================================================
-// PASTE YOUR FIREBASE CONFIG HERE (Firebase Console â†’ Project
-// Settings â†’ Your apps â†’ Web app). This is the only edit needed.
+// PASTE YOUR FIREBASE CONFIG HERE (Firebase Console â†â€™ Project
+// Settings â†â€™ Your apps â†â€™ Web app). This is the only edit needed.
 // ============================================================
 const firebaseConfig = {
   apiKey: "AIzaSyBFq75yTSw6moYyuNBq6UsEVaPgqmUsXVo",
@@ -419,9 +420,8 @@ function startEmfSound(){
 }
 function stopEmfSound(){ if(emfTimer){ clearTimeout(emfTimer); emfTimer = null; } }
 
-// --- REM-POD: single-tone repeating beep, like a real REM-POD alert ---
-let remTimer = null;
-function playRemBeep(){
+// --- REM-POD: one continuous held tone while active, like a real REM-POD alert ---
+function playShortBeep(){
   const osc = audioCtx.createOscillator();
   const g = audioCtx.createGain();
   osc.type = 'square';
@@ -434,16 +434,27 @@ function playRemBeep(){
   osc.start(now);
   osc.stop(now + 0.1);
 }
+let remOsc = null, remGain = null;
 function startRemSound(){
   ensureAudio();
   stopRemSound();
-  function loop(){
-    playRemBeep();
-    remTimer = setTimeout(loop, 260);
-  }
-  loop();
+  remOsc = audioCtx.createOscillator();
+  remGain = audioCtx.createGain();
+  remOsc.type = 'square';
+  remOsc.frequency.value = 1050;
+  remGain.gain.value = 0;
+  remOsc.connect(remGain); remGain.connect(masterGain);
+  remOsc.start();
+  remGain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.03);
 }
-function stopRemSound(){ if(remTimer){ clearTimeout(remTimer); remTimer = null; } }
+function stopRemSound(){
+  if(remOsc){
+    const now = audioCtx.currentTime;
+    remGain.gain.linearRampToValueAtTime(0, now + 0.05);
+    remOsc.stop(now + 0.08);
+    remOsc = null; remGain = null;
+  }
+}
 
 // --- REM-POD local simulation: opens beeping with dots lit + STOP button (field view) ---
 let k2LocalActive = false;
@@ -471,7 +482,7 @@ function stopK2LocalSim(){
 }
 document.getElementById('k2StopBtn').addEventListener('click', stopK2LocalSim);
 
-// --- Motion sensor: radar blip at random positions + continuous REM-POD-style beep ---
+// --- Motion sensor: radar blip locked to one random position per trigger + continuous alert beep ---
 let motionAlertTimer = null;
 function showRadarBlip(){
   const blip = document.getElementById('radarBlip');
@@ -489,15 +500,11 @@ function hideRadarBlip(){
 function startMotionAlert(){
   ensureAudio();
   stopMotionAlert();
-  function loop(){
-    showRadarBlip();
-    playRemBeep();
-    motionAlertTimer = setTimeout(loop, 260);
-  }
-  loop();
+  showRadarBlip(); // pick one position and hold it there
+  motionAlertTimer = setInterval(playShortBeep, 260);
 }
 function stopMotionAlert(){
-  if(motionAlertTimer){ clearTimeout(motionAlertTimer); motionAlertTimer = null; }
+  if(motionAlertTimer){ clearInterval(motionAlertTimer); motionAlertTimer = null; }
   hideRadarBlip();
 }
 
@@ -681,7 +688,7 @@ if(role === 'field'){
   }
 }
 
-let ghostState = { visible:false, opacity:70 };
+let ghostState = { visible:false, opacity:100 };
 let liveRemOn = false, liveMotion = false, liveGhostVisible = false;
 
 function applyState(data){
@@ -724,7 +731,7 @@ function applyState(data){
   if(newGhostVisible !== liveGhostVisible) ghostAutoPos = null;
   liveGhostVisible = newGhostVisible;
   ghostState.visible = newGhostVisible;
-  ghostState.opacity = typeof data.ghostOp === 'number' ? data.ghostOp : 70;
+  ghostState.opacity = 100;
 
   setDot('dot-emf', data.emf > 5);
   setDot('dot-k2', !!data.remOn);
@@ -854,25 +861,51 @@ function stepGhostAutoPos(w,h){
   ghostAutoPos.cx = Math.max(minX, Math.min(maxX, ghostAutoPos.cx));
   ghostAutoPos.cy = Math.max(minY, Math.min(maxY, ghostAutoPos.cy));
 }
+// Robotic limb twitch: a few joints snap to a new offset every so often
+// (no interpolation) so the figure reads as actively moving its limbs,
+// on top of the slow whole-body drift above.
+let limbPose = {};
+let nextLimbUpdate = 0;
+const limbJoints = [8,9,10,11,12,13,14,15]; // elbows, hands, knees, feet
+function updateLimbPose(){
+  const now = Date.now();
+  if(now >= nextLimbUpdate){
+    limbJoints.forEach(i=>{
+      limbPose[i] = [(Math.random()-0.5)*16, (Math.random()-0.5)*16];
+    });
+    nextLimbUpdate = now + 350 + Math.random()*450;
+  }
+}
+
 function drawSkeletonGhost(){
   const w = ghostCanvas.width, h = ghostCanvas.height;
   stepGhostAutoPos(w,h);
+  updateLimbPose();
   const { cx, cy, scale } = ghostAutoPos;
   const alpha = ghostState.opacity/100;
 
-  gctx.strokeStyle = `rgba(255,59,59,${alpha})`;
-  gctx.lineWidth = 2;
+  function jointPos(i){
+    const p = skeletonPoints[i];
+    const off = limbPose[i] || [0,0];
+    return [cx + (p[0]+off[0])*scale, cy + (p[1]+off[1])*scale];
+  }
+
+  gctx.strokeStyle = `rgba(57,255,136,${alpha})`;
+  gctx.lineWidth = Math.max(8, scale*6);
+  gctx.lineCap = 'round';
+  gctx.lineJoin = 'round';
   skeletonLines.forEach(([a,b])=>{
-    const pa = skeletonPoints[a], pb = skeletonPoints[b];
+    const [ax,ay] = jointPos(a), [bx,by] = jointPos(b);
     gctx.beginPath();
-    gctx.moveTo(cx + pa[0]*scale, cy + pa[1]*scale);
-    gctx.lineTo(cx + pb[0]*scale, cy + pb[1]*scale);
+    gctx.moveTo(ax, ay);
+    gctx.lineTo(bx, by);
     gctx.stroke();
   });
   gctx.fillStyle = `rgba(255,255,255,${alpha})`;
-  skeletonPoints.forEach(p=>{
+  skeletonPoints.forEach((p,i)=>{
+    const [x,y] = jointPos(i);
     gctx.beginPath();
-    gctx.arc(cx + p[0]*scale, cy + p[1]*scale, 3, 0, Math.PI*2);
+    gctx.arc(x, y, Math.max(5, scale*4), 0, Math.PI*2);
     gctx.fill();
   });
 }
@@ -893,7 +926,7 @@ window.addEventListener('devicemotion', (e)=>{
 // OPERATOR CONSOLE LOGIC
 // ============================================================
 let opDbRef = null;
-let opState = { emf:0, remOn:false, spiritWord:'', temp:21, motion:false, ghostVisible:false, ghostOp:70 };
+let opState = { emf:0, remOn:false, spiritWord:'', temp:21, motion:false, ghostVisible:false, ghostOp:100 };
 
 if(role === 'operator'){
   const codeInput = document.getElementById('codeInput');
@@ -950,7 +983,6 @@ if(role === 'operator'){
     ghostToggle.classList.toggle('active-state', opState.ghostVisible);
     pushOp();
   });
-  document.getElementById('ghostOp').addEventListener('input', (e)=>{ opState.ghostOp = Number(e.target.value); document.getElementById('ghostOpVal').textContent = opState.ghostOp; pushOp(); });
 }
 </script>
 <script>
@@ -962,3 +994,4 @@ if('serviceWorker' in navigator){
 </script>
 </body>
 </html>
+```
