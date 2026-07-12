@@ -1,4 +1,4 @@
-const CACHE_NAME = 'spectre-cache-v6';
+const CACHE_NAME = 'spectre-cache-v7';
 const FILES_TO_CACHE = [
   './index.html',
   './manifest.json',
